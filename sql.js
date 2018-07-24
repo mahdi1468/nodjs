@@ -6,13 +6,12 @@ var con = mysql.createConnection({
   password: "77311377m",
   database: "mydb"
 });
-
 con.connect(function(err) {
   if (err) throw err;
   console.log("Connected!");
-  var sql = "CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30), address VARCHAR(255))";
+  var sql = "INSERT INTO users (name, email, pasword, mony) VALUES ('Company Inc', 'Highway 37','pas',200)";
   con.query(sql, function (err, result) {
     if (err) throw err;
-    console.log("Table created");
+    console.log("1 record inserted");
   });
 });
