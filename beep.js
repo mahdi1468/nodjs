@@ -39,7 +39,7 @@ io.on('connection', function(socket){
 	if(result.length >0)
 	{
 		console.log("email tekrari ast");
-		
+		socket.emit('email_tekrari');
 	}
 	else
 	{
