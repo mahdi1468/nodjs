@@ -3,9 +3,10 @@ var io = require('socket.io')({
 });
 var md5 = require('md5');
 io.attach(4567);
-
+console.log('server started! :)');
 io.on('connection', function(socket)
 {
+	
 	socket.on('add user', function(data)
 	{
 		console.log('new user');
@@ -105,6 +106,7 @@ io.on('connection', function(socket)
 					if(result[0].pasword == jsonParsed.pasword)
 					{
 						console.log("vared shod");
+						socket.emit('sign_in_accept');
 					}
 					else
 					{
@@ -123,10 +125,10 @@ io.on('connection', function(socket)
 
 	});
 
-//chenge pasword
-	socket.on('change_pasword', function(data)
+//forget_pasword
+	socket.on('forget_pasword', function(data)
 	{
-		console.log('change_pasword');
+		console.log('forget_pasword');
 		
 
 
@@ -229,6 +231,7 @@ io.on('connection', function(socket)
 								console.log(error);
 							  } else {
 								console.log('Email sent: ' + info.response);
+								socket.emit('pas_changed_forget');
 							  }
 							});
 												
@@ -241,13 +244,124 @@ io.on('connection', function(socket)
 				}
 				else
 				{//email nis
-					//	socket.emit('wrong_up');
+						socket.emit('wrong_email');
 						console.log("email nist emaili ke dadi"+email);
 				}
 		   });
 		});
 
 	});
+	
+	//change_pasword
+	socket.on('change_pasword', function(data)
+	{
+		console.log('change_pasword');
+		
+
+
+		var mydata = JSON.stringify(data);
+		console.log(mydata);
+		// parse json
+		var jsonParsed = JSON.parse(mydata);
+
+		// access elements
+
+		var email = "'"+jsonParsed.email+ "'";
+		var new_pas = "'"+jsonParsed.newpasword+ "'";
+		var last_pas = "'"+jsonParsed.lastpasword+ "'";
+
+		//sql
+		var mysql = require('mysql');
+
+		var con = mysql.createConnection(
+		{
+			host: "localhost",
+			user: "root",
+			password: "77311377m",
+			database: "mydb"
+		});
+
+		con.connect(function(err)
+		{
+		  if (err) throw err;
+		  console.log("Connected!");
+
+		   con.query("SELECT * FROM users WHERE email = "+email, function (err, result)
+		   {
+				if (err) throw err;
+				//aya ghablan sabt shode???
+				if(result.length >0)
+				{
+					if(result[0].pasword != jsonParsed.lastpasword)
+					{
+						console.log("wrong last pas");
+						socket.emit('wrong_email_or_pasword');
+						return;
+					}
+					var name ="'"+result[0].name+"'";
+					var mony ="'"+result[0].mony+"'";
+					
+					
+					console.log("email");
+					
+					
+					
+					
+					
+					
+							//delete
+							  var sql = "DELETE FROM users WHERE email = "+email;
+							  con.query(sql, function (err, result)
+							{
+								if (err) throw err;
+								console.log("Number of records deleted: " + result.affectedRows);
+							  
+							  
+							//  add
+							  sql = "INSERT INTO users (name, email, pasword, mony) VALUES ("+name+","+email+","+new_pas+","+mony+")";
+							  con.query(sql, function (err, result) {
+								if (err) throw err;
+								console.log("1 record inserted");
+								socket.emit('pas_changed');
+							  });
+							  
+							  
+							  
+							  
+							});
+							
+					
+					
+					
+					
+					
+				}
+				else
+				{//email nis
+					//	socket.emit('wrong_up');
+						console.log("email nist emaili ke dadi"+email);
+						socket.emit('wrong_email_or_pasword');
+				}
+		   });
+		});
+
+	});
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	socket.on('beep', function(){
 		  console.log('residddddd');
